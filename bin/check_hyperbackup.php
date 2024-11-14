@@ -83,7 +83,7 @@ $ssl = "";
 if(isset($options['h'])) { print_help(); exit;}
 if(isset($options['v'])) $debug = true;
 
-$options = getopt("shPvH:u:p:");
+$options = getopt("shvH:P:u:p:");
 if($debug) print_r($options);
 
 // Check servername
