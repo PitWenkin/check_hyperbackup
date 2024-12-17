@@ -141,10 +141,10 @@ if(!isset($options['p'])) {echo "Password not defined.\n";print_help();exit;} el
 		1 => "WARNING",
 		2 => "CRITICAL",
 		3 => "UNKNOWN",
-		);
+	);
 	
 	foreach($obj->data->task_list as $task) {
-    	if($debug) print_r(task);	
+		if($debug) print_r(task);	
 		$obj = syno_request($server.'/webapi/'.$path.'?api='.$api.'&version=1&method=status&blOnline=false&additional=%5B%22last_bkp_time%22%2C%22next_bkp_time%22%2C%22last_bkp_result%22%2C%22is_modified%22%2C%22last_bkp_progress%22%5D&task_id='.$task->task_id.'&_sid='.$sid);
 		if($debug) print_r($obj);
 		$last_bkp_status = $obj->data->last_bkp_result;
@@ -152,47 +152,43 @@ if(!isset($options['p'])) {echo "Password not defined.\n";print_help();exit;} el
 		
 		$s = 0;
 		// check last_bkp_result
-		if($last_bkp_status === "done" )
+		if($last_bkp_status === "done" ) {
 			$status_n = max(0, $status_n);
-		elseif($last_bkp_status === "none" )
+		} elseif($last_bkp_status === "none" ) {
 			$status_n = max(1, $status_n);
-		elseif($last_bkp_status === "backingup") 
+			$s = 1;
+		} elseif($last_bkp_status === "backingup") {
 			$status_n = max(0, $status_n);
-		elseif($last_bkp_status === "resuming") 
+		} elseif($last_bkp_status === "resuming") {
 			$status_n = max(0, $status_n);
-                elseif($last_bkp_status === "version_deleting")
-                        $status_n = max(0, $status_n);
-                elseif($last_bkp_status === "preparing_version_delete")
-                        $status_n = max(0, $status_n);
-		else
+		} elseif($last_bkp_status === "version_deleting") {
+			$status_n = max(0, $status_n);
+		} elseif($last_bkp_status === "preparing_version_delete") {
+			$status_n = max(0, $status_n);
+		} else {
 			$status_n = max(2, $status_n);
+			$s = 2;
+		}
 			
 		// Check task_status
 		if($task_status === "none") { // Normal situation : no end going backup and last backup was success
 			$status_n = max(0, $status_n);
-		}
-		elseif($task_status === "detect") { // Ongoing backup
+		} elseif($task_status === "detect") { // Ongoing backup
 			$status_n = max(0, $status_n);
-		}
-		elseif($task_status === "waiting") { // Waiting for backup
+		} elseif($task_status === "waiting") { // Waiting for backup
 			$status_n = max(0, $status_n);
-		}
-		elseif($task_status === "backup") { // Ongoing backup
+		} elseif($task_status === "backup") { // Ongoing backup
 			$status_n = max(0, $status_n);
-		}
-		elseif($task_status === "version_deleting" || $task_status === "preparing_version_delete") { //Ongoing/praparation of deletion of old version
-                        $status_n = max(0, $status_n);
-                }
-		elseif($last_bkp_status === "resuming" && $task_status === "backup") { // Resuming backup
+		} elseif($task_status === "version_deleting" || $task_status === "preparing_version_delete") { //Ongoing/praparation of deletion of old version
 			$status_n = max(0, $status_n);
-		}
-		elseif($last_bkp_status === "suspended") { // Backup suspended
+		} elseif($last_bkp_status === "resuming" && $task_status === "backup") { // Resuming backup
+			$status_n = max(0, $status_n);
+		} elseif($last_bkp_status === "suspended") { // Backup suspended
 			$status_n = max(1, $status_n);
-			$s = 1;
-		}
-		else { // Default value for unknow situation
+			$s = max(1, $s);
+		} else { // Default value for unknow situation
 			$status_n = max(2, $status_n);
-			$s = 2;
+			$s = max(2, $s);
 		}
 		echo "Backup ".$task->name." status is $task_status. Last backup result: $last_bkp_status. Status is ".$nagios_status[$s]."\n";
 	}
@@ -218,3 +214,4 @@ if(!isset($options['p'])) {echo "Password not defined.\n";print_help();exit;} el
     exit ($status_n);
     
 ?>
+
